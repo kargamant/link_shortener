@@ -15,13 +15,13 @@ public final class ExpiredLinkCleaner {
         this.clock = Objects.requireNonNull(clock, "clock");
     }
 
-    public int removeExpiredLinks() {
+    public List<ShortLink> removeExpiredLinks() {
         synchronized (storage) {
             List<ShortLink> expired = storage.findExpired(clock.instant());
             for (ShortLink link : expired) {
                 storage.delete(link.code());
             }
-            return expired.size();
+            return expired;
         }
     }
 }

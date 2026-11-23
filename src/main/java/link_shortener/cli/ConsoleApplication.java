@@ -30,7 +30,9 @@ public final class ConsoleApplication {
     private final BufferedReader input;
     private final PrintWriter output;
     private final String shortLinkPrefix;
+    private final Object promptLock = new Object();
     private UUID currentUserId;
+    private boolean waitingForInput;
 
     public ConsoleApplication(
             LinkService links, ExpiredLinkCleaner cleaner, ApplicationConfig config,
@@ -51,14 +53,31 @@ public final class ConsoleApplication {
             scheduler.scheduleWithFixedDelay(
                     this::cleanExpiredLinks, interval, interval, TimeUnit.NANOSECONDS);
             while (true) {
-                output.print("> ");
-                output.flush();
-                String line = input.readLine();
+                String line = readCommand();
                 if (line == null || (!line.isBlank() && !execute(line.strip()))) {
                     return;
                 }
             }
         }
+    }
+
+    private String readCommand() throws IOException {
+        synchronized (promptLock) {
+            waitingForInput = true;
+            printPrompt();
+        }
+        try {
+            return input.readLine();
+        } finally {
+            synchronized (promptLock) {
+                waitingForInput = false;
+            }
+        }
+    }
+
+    private void printPrompt() {
+        output.print("> ");
+        output.flush();
     }
 
     private boolean execute(String line) {
@@ -239,14 +258,29 @@ public final class ConsoleApplication {
 
     private void cleanExpiredLinks() {
         try {
-            int removed = cleaner.removeExpiredLinks();
-            if (removed > 0) {
-                output.println("Expired links removed — " + removed);
+            List<String> messages = cleaner.removeExpiredLinks().stream()
+                    .map(link -> "Expired link removed: " + config.shortUrl(link.code()))
+                    .toList();
+            printCleanupMessages(messages);
+        } catch (UncheckedIOException | SecurityException e) {
+            printCleanupMessages(List.of("Could not remove expired links. " + e.getMessage()));
+        }
+    }
+
+    private void printCleanupMessages(List<String> messages) {
+        if (messages.isEmpty()) {
+            return;
+        }
+        synchronized (promptLock) {
+            if (waitingForInput) {
+                output.println();
+            }
+            messages.forEach(output::println);
+            if (waitingForInput) {
+                printPrompt();
+            } else {
                 output.flush();
             }
-        } catch (UncheckedIOException | SecurityException e) {
-            output.println("Could not remove expired links. " + e.getMessage());
-            output.flush();
         }
     }
 }
