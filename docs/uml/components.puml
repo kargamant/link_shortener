@@ -1,0 +1,63 @@
+@startuml
+title Link Shortener — Components
+
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+package "CLI" {
+  [ConsoleApplication] as Console
+  [ConsoleExpirationNotifier] as ConsoleNotifier
+}
+
+package "Application" {
+  [LinkService] as LinkService
+  [ExpiredLinkCleaner] as Cleaner
+  [ApplicationConfig] as Config
+
+  interface UserRepository
+  interface ShortLinkRepository
+  interface ShortCodeGenerator
+  interface ExpirationNotifier
+}
+
+package "Domain" {
+  [ShortLink] as ShortLink
+}
+
+package "Infrastructure" {
+  [LocalFileStorage] as FileStorage
+  [Base62CodeGenerator] as CodeGenerator
+  [PropertiesConfigLoader] as ConfigLoader
+  database "Local data files" as DataFiles
+  artifact "application.properties" as Properties
+}
+
+package "Java standard library" {
+  [Desktop] as Desktop
+  [ScheduledExecutorService] as Executor
+}
+
+Console --> LinkService : invokes
+Console --> Config : reads current settings
+Console --> Cleaner : runs at startup and via scheduled callback
+Console --> Executor : schedules periodic cleanup
+
+LinkService --> ShortLink
+LinkService --> UserRepository : saves and looks up UUIDs
+LinkService --> ShortLinkRepository
+LinkService --> ShortCodeGenerator
+LinkService --> Desktop : browse
+LinkService --> Config
+
+Cleaner --> ShortLinkRepository
+Cleaner --> ExpirationNotifier
+
+FileStorage ..|> UserRepository
+FileStorage ..|> ShortLinkRepository
+FileStorage --> DataFiles : stores issued UUIDs and links
+CodeGenerator ..|> ShortCodeGenerator
+ConsoleNotifier ..|> ExpirationNotifier
+ConfigLoader --> Properties
+ConfigLoader --> Config : creates
+
+@enduml

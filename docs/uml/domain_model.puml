@@ -1,0 +1,21 @@
+@startuml
+title Доменная модель
+
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class ShortLink <<entity>> {
+  - code: String
+  - originalUrl: URI
+  - ownerId: UUID
+  - transitionLimit: int
+  - transitionCount: int
+  - expiresAt: Instant
+  + isExpired(now: Instant): boolean
+  + hasAvailableTransitions(): boolean
+  + registerTransition(): void
+  + changeTransitionLimit(newLimit: int): void
+}
+
+@enduml
