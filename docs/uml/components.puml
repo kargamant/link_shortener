@@ -6,7 +6,6 @@ skinparam linetype ortho
 
 package "CLI" {
   [ConsoleApplication] as Console
-  [ConsoleExpirationNotifier] as ConsoleNotifier
 }
 
 package "Application" {
@@ -16,7 +15,6 @@ package "Application" {
 
   interface Storage
   interface ShortCodeGenerator
-  interface ExpirationNotifier
 }
 
 package "Domain" {
@@ -49,12 +47,10 @@ LinkService --> Desktop : browse
 LinkService --> Config
 
 Cleaner --> Storage : finds and deletes expired links
-Cleaner --> ExpirationNotifier
 
 FileStorage ..|> Storage
 FileStorage --> DataFiles : stores issued UUIDs and links
 CodeGenerator ..|> ShortCodeGenerator
-ConsoleNotifier ..|> ExpirationNotifier
 ConfigLoader --> Properties
 ConfigLoader --> Config : creates
 
