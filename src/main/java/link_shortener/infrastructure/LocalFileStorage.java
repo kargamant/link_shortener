@@ -2,6 +2,7 @@ package link_shortener.infrastructure;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.net.URI;
@@ -147,7 +148,12 @@ public final class LocalFileStorage implements Storage {
             Files.createDirectories(directory);
             temporaryFile = Files.createTempFile(directory, ".link-shortener-", ".tmp");
             try (Writer writer = Files.newBufferedWriter(temporaryFile)) {
-                updated.store(writer, "Link shortener storage");
+                StringWriter serialized = new StringWriter();
+                updated.store(serialized, null);
+                String contents = serialized.toString();
+                // Properties.store writes a timestamp even with no comment.
+                int firstEntry = contents.indexOf('\n') + 1;
+                writer.write(contents, firstEntry, contents.length() - firstEntry);
             }
             try {
                 Files.move(temporaryFile, file, StandardCopyOption.ATOMIC_MOVE,
