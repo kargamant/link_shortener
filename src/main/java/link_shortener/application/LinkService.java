@@ -88,7 +88,6 @@ public final class LinkService {
     public List<ShortLink> findOwnedLinks(UUID ownerId) {
         Objects.requireNonNull(ownerId, "ownerId");
         synchronized (storage) {
-            Instant now = clock.instant();
             return storage.findByOwnerId(ownerId);
         }
     }

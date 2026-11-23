@@ -41,6 +41,7 @@ public record ApplicationConfig(
     }
 
     public URI shortUrl(String code) {
+
         return shortLinkBaseUrl.resolve(code);
     }
 

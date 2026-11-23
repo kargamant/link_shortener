@@ -30,7 +30,7 @@ public final class ShortLink {
         if (transitionCount < 0) {
             throw new IllegalArgumentException("Transition count cannot be negative");
         }
-        validateTransitionLimit(transitionLimit, transitionCount);
+        validateTransitionLimit(transitionLimit);
         this.transitionLimit = transitionLimit;
         this.transitionCount = transitionCount;
     }
@@ -75,11 +75,11 @@ public final class ShortLink {
     }
 
     public void changeTransitionLimit(int newLimit) {
-        validateTransitionLimit(newLimit, transitionCount);
+        validateTransitionLimit(newLimit);
         transitionLimit = newLimit;
     }
 
-    private static void validateTransitionLimit(int limit, int count) {
+    private static void validateTransitionLimit(int limit) {
         if (limit <= 0) {
             throw new IllegalArgumentException("Transition limit cannot be negative");
         }

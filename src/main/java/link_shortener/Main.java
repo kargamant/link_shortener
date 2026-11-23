@@ -25,7 +25,7 @@ public final class Main {
 
     public static void main(String[] args) {
         if (args.length > 1) {
-            System.err.println("Usage — link_shortener.Main [config-file]");
+            System.err.println("usage: link_shortener.Main [config-file]");
             System.exit(1);
         }
         try {
