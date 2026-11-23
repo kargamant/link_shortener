@@ -13,9 +13,9 @@ package "Application" {
   [LinkService] as LinkService
   [ExpiredLinkCleaner] as Cleaner
   [ApplicationConfig] as Config
-  [Base62CodeGenerator] as CodeGenerator
 
   interface Storage
+  interface ShortCodeGenerator
   interface ExpirationNotifier
 }
 
@@ -25,6 +25,7 @@ package "Domain" {
 
 package "Infrastructure" {
   [LocalFileStorage] as FileStorage
+  [Base62CodeGenerator] as CodeGenerator
   [PropertiesConfigLoader] as ConfigLoader
   database "Local data files" as DataFiles
   artifact "application.properties" as Properties
@@ -42,7 +43,8 @@ Console --> Executor : schedules periodic cleanup
 
 LinkService --> ShortLink
 LinkService --> Storage : saves and looks up UUIDs and links
-LinkService --> CodeGenerator
+LinkService --> ShortCodeGenerator
+LinkService ..> CodeGenerator : creates
 LinkService --> Desktop : browse
 LinkService --> Config
 
@@ -51,6 +53,7 @@ Cleaner --> ExpirationNotifier
 
 FileStorage ..|> Storage
 FileStorage --> DataFiles : stores issued UUIDs and links
+CodeGenerator ..|> ShortCodeGenerator
 ConsoleNotifier ..|> ExpirationNotifier
 ConfigLoader --> Properties
 ConfigLoader --> Config : creates
