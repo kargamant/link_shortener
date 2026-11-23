@@ -14,6 +14,7 @@ import link_shortener.application.ExpiredLinkCleaner;
 import link_shortener.application.LinkService;
 import link_shortener.application.Storage;
 import link_shortener.cli.ConsoleApplication;
+import link_shortener.infrastructure.CodeGenerator;
 import link_shortener.infrastructure.LocalFileStorage;
 import link_shortener.infrastructure.PropertiesConfigLoader;
 
@@ -33,7 +34,7 @@ public final class Main {
             ApplicationConfig config = args.length == 0 ? loader.load() : loader.load(Path.of(args[0]));
             Clock clock = Clock.systemUTC();
             Storage storage = new LocalFileStorage(STORAGE_FILE);
-            LinkService links = new LinkService(storage, config, clock);
+            LinkService links = new LinkService(storage, new CodeGenerator(), config, clock);
             ExpiredLinkCleaner cleaner = new ExpiredLinkCleaner(storage, clock);
 
             Console console = System.console();

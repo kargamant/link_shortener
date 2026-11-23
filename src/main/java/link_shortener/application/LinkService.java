@@ -13,24 +13,26 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import link_shortener.domain.ShortLink;
-import link_shortener.infrastructure.CodeGenerator;
 
 public final class LinkService {
     private static final int MAX_CODE_ATTEMPTS = 100;
 
     private final Storage storage;
-    private final ShortCodeGenerator codes = new CodeGenerator();
+    private final ShortCodeGenerator codes;
     private final ApplicationConfig config;
     private final Clock clock;
     private final Consumer<URI> browser;
 
-    public LinkService(Storage storage, ApplicationConfig config, Clock clock) {
-        this(storage, config, clock, LinkService::openInBrowser);
+    public LinkService(
+            Storage storage, ShortCodeGenerator codes, ApplicationConfig config, Clock clock) {
+        this(storage, codes, config, clock, LinkService::openInBrowser);
     }
 
     public LinkService(
-            Storage storage, ApplicationConfig config, Clock clock, Consumer<URI> browser) {
+            Storage storage, ShortCodeGenerator codes,
+            ApplicationConfig config, Clock clock, Consumer<URI> browser) {
         this.storage = Objects.requireNonNull(storage, "storage");
+        this.codes = Objects.requireNonNull(codes, "codes");
         this.config = Objects.requireNonNull(config, "config");
         this.clock = Objects.requireNonNull(clock, "clock");
         this.browser = Objects.requireNonNull(browser, "browser");

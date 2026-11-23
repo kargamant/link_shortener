@@ -151,7 +151,6 @@ public final class LocalFileStorage implements Storage {
                 StringWriter serialized = new StringWriter();
                 updated.store(serialized, null);
                 String contents = serialized.toString();
-                // Properties.store writes a timestamp even with no comment.
                 int firstEntry = contents.indexOf('\n') + 1;
                 writer.write(contents, firstEntry, contents.length() - firstEntry);
             }
