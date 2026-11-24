@@ -1,57 +1,45 @@
 @startuml
-title Link Shortener — Components
+title Components
 
+left to right direction
 skinparam componentStyle rectangle
-skinparam linetype ortho
 
-package "CLI" {
-  [ConsoleApplication] as Console
+component Main
+
+package "cli" {
+  component ConsoleApplication
 }
 
-package "Application" {
-  [LinkService] as LinkService
-  [ExpiredLinkCleaner] as Cleaner
-  [ApplicationConfig] as Config
-
+package "application" {
+  component LinkService
+  component ExpiredLinkCleaner
+  component ApplicationConfig
   interface Storage
   interface ShortCodeGenerator
 }
 
-package "Domain" {
-  [ShortLink] as ShortLink
+package "domain" {
+  component ShortLink
 }
 
-package "Infrastructure" {
-  [LocalFileStorage] as FileStorage
-  [Base62CodeGenerator] as CodeGenerator
-  [PropertiesConfigLoader] as ConfigLoader
-  database "Local data files" as DataFiles
-  artifact "application.properties" as Properties
+package "infrastructure" {
+  component LocalFileStorage
+  component CodeGenerator
+  component PropertiesConfigLoader
 }
 
-package "Java standard library" {
-  [Desktop] as Desktop
-  [ScheduledExecutorService] as Executor
-}
-
-Console --> LinkService : invokes
-Console --> Config : reads current settings
-Console --> Cleaner : runs at startup and via scheduled callback
-Console --> Executor : schedules periodic cleanup
+Main --> ConsoleApplication
+ConsoleApplication --> LinkService
+ConsoleApplication --> ExpiredLinkCleaner
 
 LinkService --> ShortLink
-LinkService --> Storage : saves and looks up UUIDs and links
+LinkService --> Storage
 LinkService --> ShortCodeGenerator
-LinkService ..> CodeGenerator : creates
-LinkService --> Desktop : browse
-LinkService --> Config
+LinkService --> ApplicationConfig
+ExpiredLinkCleaner --> Storage
 
-Cleaner --> Storage : finds and deletes expired links
-
-FileStorage ..|> Storage
-FileStorage --> DataFiles : stores issued UUIDs and links
+LocalFileStorage ..|> Storage
 CodeGenerator ..|> ShortCodeGenerator
-ConfigLoader --> Properties
-ConfigLoader --> Config : creates
+PropertiesConfigLoader --> ApplicationConfig
 
 @enduml
